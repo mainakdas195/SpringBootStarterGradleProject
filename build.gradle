@@ -73,7 +73,7 @@ test {
 	ignoreFailures = true
 	useJUnitPlatform {
 		//below no test will be executed
-		excludeTags("non-functional")
+		//excludeTags("non-functional")
 		
 		//below 1 test will be executed
 		excludeTags("stress")
