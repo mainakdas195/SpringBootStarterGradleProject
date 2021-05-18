@@ -1,0 +1,91 @@
+plugins {
+	id 'org.springframework.boot' version '2.4.5'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'java'
+	id 'jacoco'
+	id 'org.sonarqube' version '3.0'
+}
+
+description= 'Example of Sonar Qube Project'
+
+sonarqube {
+	properties {
+		property 'sonar.projectName' , 'Java :: Example of Sonar Qube Project with Gradle'
+		property 'sonar.projectKey' , 'org.sonarqube.JacocoCodeCoverage'
+		property "sonar.exclusions", "src/main/java/com/example/users/model/*.java,src/main/java/com/example/users/repository/*.java"
+		property 'sonar.jacoco.reportPath' , '${project.buildDir}/jacoco/test.exec'
+	}
+}
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+	jacocoVersion = '0.8.7'
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-parent', version: '2.4.4'
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa'
+	
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	runtimeOnly group: 'org.postgresql', name: 'postgresql'
+	//testCompile 'junit:junit:4.12'
+	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.6.2'
+	compileOnly group: 'org.projectlombok', name: 'lombok', version: '0.11.0'
+
+	
+}
+
+jacoco {
+	toolVersion=jacocoVersion
+	reportsDirectory = layout.buildDirectory.dir('customJacocoReportDir')
+}
+
+jacocoTestReport {
+	dependsOn test // tests are required to run before generating the report
+	reports {
+		html.enabled true
+		xml.enabled true
+		csv.enabled true
+	}
+	
+	//Below will exclude the directory from test coverage
+	afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: [
+                              '**/model/**',
+                              '**/repository/**'
+                    ]
+            )
+        }))
+    }
+	//after jacocoTestReport below task will be executed
+	finalizedBy jacocoTestCoverageVerification
+}
+test {
+	ignoreFailures = true
+	useJUnitPlatform()
+	//This can be added here also, so that after test jacoco report is generated
+	finalizedBy jacocoTestReport
+}
+
+//This tells Gradle workflow engine to execute generate test report after the test task is completed. 
+test.finalizedBy jacocoTestReport
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+        	enabled = true
+            limit {
+                minimum = 0.1
+            }
+        }        
+    }
+}
