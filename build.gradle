@@ -4,7 +4,6 @@ plugins {
 	id 'java'
 	id 'jacoco'
 	id 'org.sonarqube' version '3.0'
-	id 'com.intershop.gradle.jaxb' version '4.4.2'
 }
 
 description= 'Example of Sonar Qube Project'
@@ -19,7 +18,7 @@ sonarqube {
 }
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '1.8'
+sourceCompatibility = '11'
 
 repositories {
 	mavenCentral()
@@ -27,6 +26,10 @@ repositories {
 
 ext {
 	jacocoVersion = '0.8.7'
+}
+
+configurations {
+    jaxb
 }
 
 dependencies {
@@ -39,11 +42,14 @@ dependencies {
 	//testCompile 'junit:junit:4.12'
 	implementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.8.0-M1'
 	compileOnly group: 'org.projectlombok', name: 'lombok', version: '0.11.0'
-	
+
 	compile "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.0"
 	implementation group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
-
-	
+    jaxb (
+		'com.sun.xml.bind:jaxb-xjc:2.3.1',
+		'com.sun.xml.bind:jaxb-impl:2.3.1',
+		'org.glassfish.jaxb:jaxb-runtime:2.3.3'
+    )
 }
 
 jacoco {
@@ -100,16 +106,26 @@ jacocoTestCoverageVerification {
     }
 }
 
-
-jaxb.javaGen {
-	example {
-		schema = file ('src/main/resources/xsd/schema3.xsd')
-		binding=file ('src/main/resources/xsd/bindings.xjb')
-		outputDir =file('src/main/java')
-		packageName='com.example.users.model'
-	}
+task jaxb {
+    System.setProperty('javax.xml.accessExternalSchema', 'all')
+    //def jaxbTargetDir = file("src/generated-sources/jaxb")
+    def jaxbTargetDir = file("src/main/java")
+    doLast {
+        jaxbTargetDir.mkdirs()
+        ant.taskdef(
+			name: 'xjc',
+			classname: 'com.sun.tools.xjc.XJCTask',
+			classpath: configurations.jaxb.asPath
+        )
+        ant.jaxbTargetDir = jaxbTargetDir
+        ant.xjc(
+			destdir: '${jaxbTargetDir}',
+			package: 'com.example.users.model',
+			schema: 'src/main/resources/xsd/schema3.xsd'
+        ) {
+        	binding(dir: "src/main/resources/xsd", includes: '*.xjb')
+        }
+    }
 }
 
-tasks.withType(JavaCompile) {
-	dependsOn 'jaxb'
-}
+compileJava.dependsOn jaxb
