@@ -4,6 +4,7 @@ plugins {
 	id 'java'
 	id 'jacoco'
 	id 'org.sonarqube' version '3.0'
+	id 'com.intershop.gradle.jaxb' version '4.4.2'
 }
 
 description= 'Example of Sonar Qube Project'
@@ -38,6 +39,9 @@ dependencies {
 	//testCompile 'junit:junit:4.12'
 	implementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.8.0-M1'
 	compileOnly group: 'org.projectlombok', name: 'lombok', version: '0.11.0'
+	
+	compile "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.0"
+	implementation group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
 
 	
 }
@@ -94,4 +98,18 @@ jacocoTestCoverageVerification {
             }
         }        
     }
+}
+
+
+jaxb.javaGen {
+	example {
+		schema = file ('src/main/resources/xsd/schema3.xsd')
+		binding=file ('src/main/resources/xsd/bindings.xjb')
+		outputDir =file('src/main/java')
+		packageName='com.example.users.model'
+	}
+}
+
+tasks.withType(JavaCompile) {
+	dependsOn 'jaxb'
 }
