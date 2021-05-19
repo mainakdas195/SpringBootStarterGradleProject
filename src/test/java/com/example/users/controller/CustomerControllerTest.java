@@ -18,6 +18,8 @@ class CustomerControllerTest {
 	@MockBean
     private CustomerRepository customerRepository;
 	
+	//@RepeatedTest(5) Same test case is repeated mentioned number of time.
+	//@Nested 
 	@Test
 	void testAddCustomer() throws Exception {
 		Customer customer = new Customer();
