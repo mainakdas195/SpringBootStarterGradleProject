@@ -12,7 +12,7 @@ sonarqube {
 	properties {
 		property 'sonar.projectName' , 'Java :: Example of Sonar Qube Project with Gradle'
 		property 'sonar.projectKey' , 'org.sonarqube.JacocoCodeCoverage'
-		property "sonar.exclusions", "src/main/java/com/example/users/model/*.java,src/main/java/com/example/users/repository/*.java"
+		property "sonar.exclusions", "src/main/java/com/example/users/model/*.java,src/main/java/com/example/users/repository/*.java, src/main/java/com/example/users/main/*.java"
 		property 'sonar.jacoco.reportPath' , '${project.buildDir}/jacoco/test.exec'
 	}
 }
@@ -44,7 +44,7 @@ dependencies {
 	compileOnly group: 'org.projectlombok', name: 'lombok', version: '0.11.0'
 
 	compile "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.9.0"
-	implementation group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
+	implementation group: 'com.google.code.gson', name: 'gson'
     jaxb (
 		'com.sun.xml.bind:jaxb-xjc:2.3.1',
 		'com.sun.xml.bind:jaxb-impl:2.3.1',
@@ -71,7 +71,8 @@ jacocoTestReport {
             fileTree(dir: it,
                     exclude: [
                               '**/model/**',
-                              '**/repository/**'
+                              '**/repository/**',
+                              '**/main/**'
                     ]
             )
         }))
